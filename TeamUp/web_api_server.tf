@@ -49,6 +49,14 @@ resource "aws_ecs_task_definition" "web_api_server" {
                     "value" : "${var.main_db_password}"
                 },
                 {
+                    "name" : "REDIS_HOST",
+                    "value" : "${aws_elasticache_cluster.teamup_redis.cache_nodes[0].address}"
+                },
+                {
+                    "name" : "REDIS_PORT",
+                    "value" : tostring(aws_elasticache_cluster.teamup_redis.cache_nodes[0].port)
+                },
+                {
                     "name" : "JWT_SECRET_KEY",
                     "value" : "${var.jwt_secret_key}"
                 },

@@ -15,7 +15,6 @@ locals {
     web_api_path = "${lower(local.service_name)}/api/web"
     admin_path   = "${lower(local.service_name)}/admin"
 
-    ami_id        = "ami-04c596dcf23eb98d8"
     instance_type = "t3.micro"
 
     ecr_force_destroy_enable = true
@@ -30,10 +29,10 @@ locals {
 
     keystore_keyname = "teamup-developer"
 
-    default_vpc_id   = "vpc-0c0078fd9f1552b2a"
-    private_subnets  = [ "subnet-017adddb6a94630bc", "subnet-033244547b54d8a5f" ]
-    public_subnets   = [ "subnet-00c76c8bab5ee26d3", "subnet-010e36e1e0b856c88" ]
-    security_groups  = [ "sg-09d68618cd428d2a8" ]
+    default_vpc_id          = "vpc-0c0078fd9f1552b2a"
+    private_subnets         = [ "subnet-017adddb6a94630bc", "subnet-033244547b54d8a5f" ]
+    public_subnets          = [ "subnet-00c76c8bab5ee26d3", "subnet-010e36e1e0b856c88" ]
+    security_groups         = [ "sg-09d68618cd428d2a8" ]
 }
 
 data "terraform_remote_state" "common" {
@@ -315,7 +314,7 @@ resource "aws_iam_policy" "email_send_policy" {
                     "ses:SendEmail",
                     "ses:SendRawEmail"
                 ],
-                "Resource" : "arn:aws:ses:us-west-2:${var.aws_account_id}:identity/${var.ses_sender}" # 개발에서는 항상 고정된 arn 사용 
+                "Resource" : "arn:aws:ses:ap-northeast-2:${var.aws_account_id}:identity/${var.ses_sender}"
             }
         ]
     })
@@ -372,6 +371,25 @@ resource "aws_db_instance" "teamup_main_db" {
     skip_final_snapshot = true
     storage_type = "gp2"
     vpc_security_group_ids = local.security_groups
+}
+
+resource "aws_elasticache_subnet_group" "teamup_redis_subnet_group" {
+    name       = "teamup"
+    subnet_ids = local.private_subnets
+}
+
+resource "aws_elasticache_cluster" "teamup_redis" {
+    cluster_id                  = "teamup"
+    engine                      = "redis"
+    node_type                   = "cache.t3.micro"
+    num_cache_nodes             = 1
+    parameter_group_name        = "default.redis7"
+    engine_version              = "7.0"
+    port                        = 6379
+    network_type                = "ipv4"
+    security_group_ids          = local.security_groups
+    snapshot_retention_limit    = 0
+    subnet_group_name           = aws_elasticache_subnet_group.teamup_redis_subnet_group.name
 }
 
 data "aws_ami" "amazon_linux_2" {
