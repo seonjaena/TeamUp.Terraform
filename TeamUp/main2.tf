@@ -130,15 +130,12 @@ resource "aws_ecr_repository" "api-ecr" {
 ###############################################
 resource "aws_ecs_cluster" "ecs_cluster" {
     name = "${local.service_name}-ecs-cluster"
+
+    setting {
+        name  = "containerInsights"
+        value = local.enable_container_insights ? "enabled" : "disabled"
+    }
 }
-
-# resource "aws_ecs_cluster" "default" {
-#     name  = "${local.service_name}_ECSCluster"
-
-#     lifecycle {
-#         create_before_destroy = true
-#     }
-# }
 
 resource "aws_launch_template" "ecs_lt" {
     name_prefix   = "${local.service_name}-ecs-template"
@@ -253,9 +250,6 @@ data "aws_iam_policy_document" "ec2_instance_role_policy" {
         }
     }
 }
-
-
-
 
 #ecs agent가 실행할 때 사용할 role
 resource "aws_iam_role" "ecsTaskExecutionRole" {

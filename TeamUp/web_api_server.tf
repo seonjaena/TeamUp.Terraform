@@ -67,6 +67,10 @@ resource "aws_ecs_task_definition" "web_api_server" {
                 {
                     "name" : "SES_SEND_EMAIL",
                     "value" : "${var.ses_sender}"
+                },
+                {
+                    "name" : "JAVA_OPTS",
+                    "value" : "-XX:InitialRAMPercentage=25.0 -XX:MinRAMPercentage=25.0"
                 }
             
             ],
