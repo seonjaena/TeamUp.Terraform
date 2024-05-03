@@ -3,11 +3,11 @@ locals {
     web_api_server_family                                = "${local.service_name}-${local.web_api_server_name}-td"
     web_api_server_ecr_image_addr                        = "107896592142.dkr.ecr.ap-northeast-2.amazonaws.com/teamup.server:0.0.1-SNAPSHOT-TEAM-1"
     web_api_server_awslogs_group                         = "/ecs/${local.web_api_server_family}"
-    web_api_server_memory                                = 450
-    web_api_server_cpu                                   = 1024
+    web_api_server_memory                                = 940
+    web_api_server_cpu                                   = 2048
     web_api_server_init_ram_percent                      = "25.0"
     web_api_server_max_ram_percent                       = "25.0"
-    web_api_server_task_desired_count                    = 2
+    web_api_server_task_desired_count                    = 1
 }
 
 resource "aws_ecs_task_definition" "web_api_server" {
@@ -70,7 +70,7 @@ resource "aws_ecs_task_definition" "web_api_server" {
                 },
                 {
                     "name" : "JAVA_OPTS",
-                    "value" : "-XX:InitialRAMPercentage=25.0 -XX:MinRAMPercentage=25.0"
+                    "value" : "-XX:InitialRAMPercentage=${local.web_api_server_init_ram_percent} -XX:MaxRAMPercentage=${local.web_api_server_max_ram_percent}"
                 }
             
             ],
@@ -116,8 +116,10 @@ resource "aws_ecs_service" "api_web_server" {
     name                               = "${local.service_name}-${local.web_api_server_name}-svc"
     cluster                            = aws_ecs_cluster.ecs_cluster.arn
     task_definition                    = aws_ecs_task_definition.web_api_server.arn
-    deployment_maximum_percent         = local.web_api_server_task_desired_count > 1 ? "100" : "200"
-    deployment_minimum_healthy_percent = local.web_api_server_task_desired_count > 1 ? "50" : "100"
+    # deployment_maximum_percent         = local.web_api_server_task_desired_count > 1 ? "100" : "200"
+    # deployment_minimum_healthy_percent = local.web_api_server_task_desired_count > 1 ? "50" : "100"
+    deployment_maximum_percent         = "100"
+    deployment_minimum_healthy_percent = "0"
     desired_count                      = local.web_api_server_task_desired_count
 
     ordered_placement_strategy {
