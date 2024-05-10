@@ -75,3 +75,9 @@ variable "cool_sms_key" {
     description = "COOL SMS의 Key"
     default     = ""
 }
+
+variable "front_base_url" {
+    type        = string
+    description = "프론트엔드의 기본 URL"
+    default     = ""
+}

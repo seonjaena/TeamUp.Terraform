@@ -69,10 +69,21 @@ resource "aws_ecs_task_definition" "web_api_server" {
                     "value" : "${var.ses_sender}"
                 },
                 {
+                    "name" : "EMAIL_VERIFICATION_CODE_VALID_MIN",
+                    "value" : "10"
+                },
+                {
+                    "name" : "CHANGE_PASSWORD_LINK_VALID_MIN",
+                    "value" : "60"
+                },
+                {
+                    "name" : "FRONT_BASE_URL",
+                    "value" : "${var.front_base_url}"
+                },
+                {
                     "name" : "JAVA_OPTS",
                     "value" : "-XX:InitialRAMPercentage=${local.web_api_server_init_ram_percent} -XX:MaxRAMPercentage=${local.web_api_server_max_ram_percent}"
                 }
-            
             ],
             "logConfiguration" : {
                 "logDriver" : "awslogs",
