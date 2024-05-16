@@ -81,6 +81,14 @@ resource "aws_ecs_task_definition" "web_api_server" {
                     "value" : "${var.front_base_url}"
                 },
                 {
+                    "name" : "COMMON_DATA_BUCKET",
+                    "value" : "${local.s3_bucket_name}"
+                },
+                {
+                    "name" : "AWS_REGION",
+                    "value" : "${local.aws_region}"
+                },
+                {
                     "name" : "JAVA_OPTS",
                     "value" : "-XX:InitialRAMPercentage=${local.web_api_server_init_ram_percent} -XX:MaxRAMPercentage=${local.web_api_server_max_ram_percent}"
                 }
