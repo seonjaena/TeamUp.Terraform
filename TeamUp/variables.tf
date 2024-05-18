@@ -70,9 +70,21 @@ variable "jwt_secret_key" {
     default     = ""
 }
 
-variable "cool_sms_key" {
+variable "sms_access_key" {
     type        = string
-    description = "COOL SMS의 Key"
+    description = "COOL SMS의 ACCESS Key"
+    default     = ""
+}
+
+variable "sms_secret_key" {
+    type        = string
+    description = "COOL SMS의 SECRET Key"
+    default     = ""
+}
+
+variable "sms_send_phone" {
+    type        = string
+    description = "SMS 보내는 전화번호"
     default     = ""
 }
 

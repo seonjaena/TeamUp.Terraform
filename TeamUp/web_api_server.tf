@@ -61,8 +61,16 @@ resource "aws_ecs_task_definition" "web_api_server" {
                     "value" : "${var.jwt_secret_key}"
                 },
                 {
-                    "name" : "SMS_KEY",
-                    "value" : "${var.cool_sms_key}"
+                    "name" : "SMS_ACCESS_KEY",
+                    "value" : "${var.sms_access_key}"
+                },
+                {
+                    "name" : "SMS_SECRET_KEY",
+                    "value" : "${var.sms_secret_key}"
+                },
+                {
+                    "name" : "SMS_SEND_PHONE",
+                    "value" : "${var.sms_send_phone}"
                 },
                 {
                     "name" : "SES_SEND_EMAIL",
@@ -87,6 +95,10 @@ resource "aws_ecs_task_definition" "web_api_server" {
                 {
                     "name" : "AWS_REGION",
                     "value" : "${local.aws_region}"
+                },
+                {
+                    "name" : "PHONE_VERIFICATION_CODE_VALID_MIN",
+                    "value" : "10"
                 },
                 {
                     "name" : "JAVA_OPTS",
