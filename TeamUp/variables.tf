@@ -93,3 +93,15 @@ variable "front_base_url" {
     description = "프론트엔드의 기본 URL"
     default     = ""
 }
+
+variable "profile_image_temp_dir" {
+    type        = string
+    description = "프로필 이미지가 저장되는 임시 디렉터리"
+    default     = ""
+}
+
+variable "profile_image_permanent_dir" {
+    type        = string
+    description = "프로필 이미지가 저장되는 디렉터리"
+    default     = ""
+}
