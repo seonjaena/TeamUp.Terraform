@@ -109,6 +109,10 @@ resource "aws_ecs_task_definition" "web_api_server" {
                     "value" : "${var.profile_image_permanent_dir}"
                 },
                 {
+                    "name" : "SERVICE_ZONE_ID", 
+                    "value" : "${var.service_zone_id}"
+                },
+                {
                     "name" : "JAVA_OPTS",
                     "value" : "-XX:InitialRAMPercentage=${local.web_api_server_init_ram_percent} -XX:MaxRAMPercentage=${local.web_api_server_max_ram_percent}"
                 }

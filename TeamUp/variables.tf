@@ -105,3 +105,9 @@ variable "profile_image_permanent_dir" {
     description = "프로필 이미지가 저장되는 디렉터리"
     default     = ""
 }
+
+variable "service_zone_id" {
+    type        = string
+    description = "서비스가 운영되는 지역의 ZONE ID"
+    default     = ""
+}
