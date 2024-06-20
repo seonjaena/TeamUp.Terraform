@@ -1,7 +1,7 @@
 locals {
     web_api_server_name                                  = "web-api-server"
     web_api_server_family                                = "${local.service_name}-${local.web_api_server_name}-td"
-    web_api_server_ecr_image_addr                        = "107896592142.dkr.ecr.ap-northeast-2.amazonaws.com/teamup.server:0.0.1-SNAPSHOT-TEAM-1"
+    web_api_server_ecr_image_addr                        = "${var.aws_account_id}.dkr.ecr.ap-northeast-2.amazonaws.com/teamup.server:0.0.1-SNAPSHOT-TEAM-1"
     web_api_server_awslogs_group                         = "/ecs/${local.web_api_server_family}"
     web_api_server_memory                                = 470
     web_api_server_cpu                                   = 1024
@@ -30,11 +30,11 @@ resource "aws_ecs_task_definition" "web_api_server" {
             "environment" : [
                 {
                     "name" : "DB_HOST",
-                    "value" : "${var.main_db_host}"
+                    "value" : "${aws_db_instance.teamup_main_db.address}"
                 },
                 {
                     "name" : "DB_PORT",
-                    "value" : "${var.main_db_port}"
+                    "value" : tostring(aws_db_instance.teamup_main_db.port)
                 },
                 {
                     "name" : "DB_NAME",
@@ -42,7 +42,7 @@ resource "aws_ecs_task_definition" "web_api_server" {
                 },
                 {
                     "name" : "DB_USERNAME",
-                    "value" : "${var.main_db_username}"
+                    "value" : "${aws_db_instance.teamup_main_db.username}"
                 },
                 {
                     "name" : "DB_PASSWORD",

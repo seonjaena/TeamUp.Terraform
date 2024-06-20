@@ -1,8 +1,8 @@
 locals {
-    service_name                           = "TeamUp"          #todo service_name값은 FXSKR값만 허용하도록 validate기능 추가
-    env                                    = "prod"            #todo env값은 dev,stage,prod값만 허용하도록 validate기능 추가
-    timezone                               = "Asia/Seoul"     #todo validate기능 추가
-    aws_region                             = "ap-northeast-2" #todo validate기능 추가
+    service_name                           = "TeamUp"
+    env                                    = "prod"
+    timezone                               = "Asia/Seoul"
+    aws_region                             = "ap-northeast-2"
     cloudwatch_log_group_retention_in_days = 30
 
     #alb dns주소를 넣기 위한 route53 record name
@@ -27,12 +27,11 @@ locals {
     s3_bucket_name                  = "${lower(local.service_name)}-common-data"
     s3_bucket_force_destroy_enable  = true
 
-    keystore_keyname = "teamup-developer"
+    # keystore_keyname = "teamup-developer"
 
-    default_vpc_id          = "vpc-0c0078fd9f1552b2a"
-    private_subnets         = [ "subnet-017adddb6a94630bc", "subnet-033244547b54d8a5f" ]
-    public_subnets          = [ "subnet-00c76c8bab5ee26d3", "subnet-010e36e1e0b856c88" ]
-    security_groups         = [ "sg-09d68618cd428d2a8" ]
+    default_vpc_id          = "vpc-03250f6dc73a4a7f5"
+    public_subnets          = [ "subnet-0a1e0e7b8826c509c", "subnet-0bb610cd6a10b6fe6" ]
+    default_security_group  = "sg-0f5ed12b8472cd1f3"
 }
 
 data "terraform_remote_state" "common" {
@@ -114,9 +113,76 @@ provider "aws" {
 }
 
 ###############################################
+# Key Pair
+###############################################
+resource "tls_private_key" "teamup_key" {
+  algorithm = "RSA"
+  rsa_bits  = 4096
+}
+
+resource "aws_key_pair" "teamup_keypair" {
+  key_name   = "${lower(local.service_name)}-keypair.pem"
+  public_key = tls_private_key.teamup_key.public_key_openssh
+} 
+
+resource "local_file" "teamup_key_local" {
+  filename        = pathexpand("~/.aws/${lower(local.service_name)}-keypair.pem")
+  content         = tls_private_key.teamup_key.private_key_pem
+  file_permission = "0600"
+}
+
+
+###############################################
+# Private Subnet
+###############################################
+resource "aws_subnet" "first_private_subnet" {
+  vpc_id            = local.default_vpc_id
+  availability_zone = "ap-northeast-2c"
+  cidr_block        = "172.31.32.0/20"
+}
+
+resource "aws_subnet" "second_private_subnet" {
+  vpc_id            = local.default_vpc_id
+  availability_zone = "ap-northeast-2d"
+  cidr_block        = "172.31.48.0/20"
+}
+
+###############################################
+# Security Group
+###############################################
+resource "aws_security_group" "teamup_security_group" {
+    vpc_id = "${local.default_vpc_id}"
+    name = "${lower(local.service_name)}"
+    ingress {
+        from_port   = 0
+        to_port     = 0
+        protocol    = -1
+        cidr_blocks = ["${var.home_ipv4}/32"]
+    }
+    ingress {
+        from_port   = 80
+        to_port     = 80
+        protocol    = "tcp"
+        cidr_blocks = ["0.0.0.0/0"]
+    }
+    ingress {
+        from_port   = 443
+        to_port     = 443
+        protocol    = "tcp"
+        cidr_blocks = ["0.0.0.0/0"]
+    }
+    ingress {
+        from_port   = 0
+        to_port     = 0
+        protocol    = -1
+        self        = true
+    }
+}
+
+###############################################
 # ECR
 ###############################################
-resource "aws_ecr_repository" "api-ecr" {
+resource "aws_ecr_repository" "api_ecr" {
     name                 = "${lower(local.service_name)}.server" # ECR 리포지토리의 이름을 설정하세요
     image_tag_mutability = "MUTABLE"
     force_delete         = local.ecr_force_destroy_enable
@@ -138,14 +204,13 @@ resource "aws_ecs_cluster" "ecs_cluster" {
 }
 
 resource "aws_launch_template" "ecs_lt" {
-    name_prefix   = "${local.service_name}-ecs-template"
-    image_id      = data.aws_ami.amazon_linux_2.image_id
-    instance_type = local.instance_type
-
-    key_name               = local.keystore_keyname
+    name_prefix     = "${local.service_name}-ecs-template"
+    image_id        = data.aws_ami.amazon_linux_2.image_id
+    instance_type   = local.instance_type
+    key_name        = aws_key_pair.teamup_keypair.key_name
 
     iam_instance_profile {
-        name = "ecsInstanceRole"
+        name = aws_iam_instance_profile.ec2_instance_role_profile.name
     }
 
     block_device_mappings {
@@ -165,7 +230,7 @@ resource "aws_launch_template" "ecs_lt" {
 
     network_interfaces {
         associate_public_ip_address = true
-        security_groups             = local.security_groups
+        security_groups             = [ aws_security_group.teamup_security_group.id, local.default_security_group ]
         subnet_id                   = local.public_subnets[0]
     }
 
@@ -333,7 +398,6 @@ resource "aws_iam_policy" "heapdump" {
 }
 
 #todo import되었는지 안되었는지 확인하기
-#import terraform import aws_s3_bucket.s3bucket xshield-fxskr-prod
 resource "aws_s3_bucket" "s3bucket" {
     bucket        = local.s3_bucket_name
     force_destroy = local.s3_bucket_force_destroy_enable
@@ -346,7 +410,7 @@ resource "aws_db_instance" "teamup_main_db" {
     auto_minor_version_upgrade = true
     availability_zone = "ap-northeast-2b"
     ca_cert_identifier = "rds-ca-rsa2048-g1"
-    db_subnet_group_name = "default-vpc-0c0078fd9f1552b2a"
+    # db_subnet_group_name = "default-${local.default_vpc_id}"
     customer_owned_ip_enabled = false
     engine = "mariadb"
     engine_version = "10.11.6"
@@ -360,16 +424,16 @@ resource "aws_db_instance" "teamup_main_db" {
     parameter_group_name = "default.mariadb10.11"
     username = var.main_db_username
     password = var.main_db_password
-    port = 3306
+    port = tonumber(var.main_db_port)
     publicly_accessible = false
     skip_final_snapshot = true
     storage_type = "gp2"
-    vpc_security_group_ids = local.security_groups
+    vpc_security_group_ids = [ aws_security_group.teamup_security_group.id, local.default_security_group ]
 }
 
 resource "aws_elasticache_subnet_group" "teamup_redis_subnet_group" {
     name       = "teamup"
-    subnet_ids = local.private_subnets
+    subnet_ids = [ aws_subnet.first_private_subnet.id, aws_subnet.second_private_subnet.id ]
 }
 
 resource "aws_elasticache_cluster" "teamup_redis" {
@@ -381,7 +445,7 @@ resource "aws_elasticache_cluster" "teamup_redis" {
     engine_version              = "7.0"
     port                        = 6379
     network_type                = "ipv4"
-    security_group_ids          = local.security_groups
+    security_group_ids          = [ aws_security_group.teamup_security_group.id, local.default_security_group ]
     snapshot_retention_limit    = 0
     subnet_group_name           = aws_elasticache_subnet_group.teamup_redis_subnet_group.name
 }

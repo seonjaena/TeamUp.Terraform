@@ -111,3 +111,9 @@ variable "service_zone_id" {
     description = "서비스가 운영되는 지역의 ZONE ID"
     default     = ""
 }
+
+variable "home_ipv4" {
+    type        = string
+    description = "집 IPv4"
+    default     = ""
+}

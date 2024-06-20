@@ -53,8 +53,8 @@ resource "aws_lb" "applicationLoadBalancer" {
   ip_address_type    = "ipv4"
   load_balancer_type = "application"
   name               = lower("${local.service_name}-web-alb")
-  security_groups = local.security_groups
-  subnets         = local.public_subnets
+  security_groups    = [ aws_security_group.teamup_security_group.id, local.default_security_group ]
+  subnets            = local.public_subnets
 }
 
 resource "aws_lb_target_group" "targetGroupApiWeb" {
