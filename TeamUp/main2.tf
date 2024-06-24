@@ -26,6 +26,7 @@ locals {
     # #s3 bucket
     s3_bucket_name                  = "${lower(local.service_name)}-common-data"
     s3_bucket_force_destroy_enable  = true
+    s3_config_bucket_name           = "${lower(local.service_name)}-config-data"
 
     # keystore_keyname = "teamup-developer"
 
@@ -397,10 +398,38 @@ resource "aws_iam_policy" "heapdump" {
     })
 }
 
-#todo import되었는지 안되었는지 확인하기
 resource "aws_s3_bucket" "s3bucket" {
     bucket        = local.s3_bucket_name
     force_destroy = local.s3_bucket_force_destroy_enable
+}
+
+resource "aws_s3_bucket" "s3_config_bucket" {
+    bucket        = local.s3_config_bucket_name
+    force_destroy = local.s3_bucket_force_destroy_enable
+}
+
+resource "aws_s3_object" "server_dev_env" {
+    bucket        = aws_s3_bucket.s3_config_bucket.id
+    key           = "server/dev.env"
+    source        = pathexpand("~/private-study/${local.service_name}/${local.service_name}.Server/dev.env")
+}
+
+resource "aws_s3_object" "server_prod_env" {
+    bucket        = aws_s3_bucket.s3_config_bucket.id
+    key           = "server/prod.env"
+    source        = pathexpand("~/private-study/${local.service_name}/${local.service_name}.Server/prod.env")
+}
+
+resource "aws_s3_object" "terraform_tfvars" {
+    bucket        = aws_s3_bucket.s3_config_bucket.id
+    key           = "terraform/terraform.tfvars"
+    source        = pathexpand("./terraform.tfvars")
+}
+
+resource "aws_s3_object" "db_dev_env" {
+    bucket        = aws_s3_bucket.s3_config_bucket.id
+    key           = "database/db.env"
+    source        = pathexpand("~/private-study/${local.service_name}/${local.service_name}.Database/db.env")
 }
 
 resource "aws_db_instance" "teamup_main_db" {
