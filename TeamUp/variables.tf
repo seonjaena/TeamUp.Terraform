@@ -24,7 +24,7 @@ variable "enable_container_insights" {
 
 variable "mail_sender" {
     type        = string
-    description = "SES 이메일을 보내는 계정"
+    description = "이메일을 보내는 계정"
     default     = ""
 }
 
@@ -115,5 +115,17 @@ variable "service_zone_id" {
 variable "home_ipv4" {
     type        = string
     description = "집 IPv4"
+    default     = ""
+}
+
+variable "smtp_username" {
+    type        = string
+    description = "SMTP 보내는 계정 아이디"
+    default     = ""
+}
+
+variable "smtp_password" {
+    type        = string
+    description = "SMTP 보내는 계정 비밀번호"
     default     = ""
 }

@@ -73,7 +73,7 @@ resource "aws_ecs_task_definition" "web_api_server" {
                     "value" : "${var.sms_send_phone}"
                 },
                 {
-                    "name" : "SES_SEND_EMAIL",
+                    "name" : "SEND_EMAIL",
                     "value" : "${var.mail_sender}"
                 },
                 {
@@ -111,6 +111,14 @@ resource "aws_ecs_task_definition" "web_api_server" {
                 {
                     "name" : "SERVICE_ZONE_ID", 
                     "value" : "${var.service_zone_id}"
+                },
+                {
+                    "name" : "SMTP_USERNAME", 
+                    "value" : "${var.smtp_username}"
+                },
+                {
+                    "name" : "SMTP_PASSWORD", 
+                    "value" : "${var.smtp_password}"
                 },
                 {
                     "name" : "JAVA_OPTS",
