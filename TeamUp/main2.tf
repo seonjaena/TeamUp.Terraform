@@ -374,7 +374,7 @@ resource "aws_iam_policy" "email_send_policy" {
                     "ses:SendEmail",
                     "ses:SendRawEmail"
                 ],
-                "Resource" : "arn:aws:ses:ap-northeast-2:${var.aws_account_id}:identity/${var.ses_sender}"
+                "Resource" : "arn:aws:ses:ap-northeast-2:${var.aws_account_id}:identity/${var.mail_sender}"
             }
         ]
     })

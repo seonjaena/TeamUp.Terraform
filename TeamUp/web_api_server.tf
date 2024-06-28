@@ -74,7 +74,7 @@ resource "aws_ecs_task_definition" "web_api_server" {
                 },
                 {
                     "name" : "SES_SEND_EMAIL",
-                    "value" : "${var.ses_sender}"
+                    "value" : "${var.mail_sender}"
                 },
                 {
                     "name" : "EMAIL_VERIFICATION_CODE_VALID_MIN",

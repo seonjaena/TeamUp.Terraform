@@ -22,7 +22,7 @@ variable "enable_container_insights" {
     default     = false
 }
 
-variable "ses_sender" {
+variable "mail_sender" {
     type        = string
     description = "SES 이메일을 보내는 계정"
     default     = ""
